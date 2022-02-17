@@ -17,6 +17,10 @@
 	</target>
 	
     <target name="resolve">
+		<ivy:resolve/>
+        <ivy:report todir='${reports.dir}/ivy' graph='false' xml='false'/>
+        <ivy:cachepath pathid="compile.path" conf="compile"/>
+        <ivy:cachepath pathid="test.path"    conf="test"/>
 	  <!--
 	  TODO:
 	  Perform an Ivy retrieve using a pathid of 'compile.classpath' and a pattern of
@@ -31,9 +35,11 @@
 	<!--
 	TODO: Make this target depend on the 'clean' and 'resolve' targets.
 	-->
-	<target name="compile">
+	<target name="compile" depends="clean">
 	  <mkdir dir="${classes.dir}"/>
 	  <javac srcdir="${src.dir}" destdir="${classes.dir}">
+
+	
 	    <!--
 		TODO: Define the classpath to be a combination of the 'compile.classpath' fileset
 		created by the "resolve" target above and a pathelement of the 'classes.dir' property.
@@ -41,10 +47,12 @@
 	  </javac>
 	</target>
 
+
+
 	<!--
 	TODO: Make this target depend on the 'compile' target.
 	-->
-	<target name="test-compile">
+	<target name="test-compile" depends="compile">
 	  <mkdir dir="${classes.test.dir}"/>
 	  <javac srcdir="${src.test.dir}" destdir="${classes.test.dir}">
 	    <!--
@@ -52,6 +60,14 @@
 		created by the "resolve" target above, a pathelement of the 'classes.dir' property,
 		and a second pathelement of the 'classes.test.dir' property.
 		-->
+		<target name="jar" depends="compile">
+			<mkdir dir="${jar.dir}"/>
+			<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+				<manifest>
+					<attribute name="Main-Class" value="${main-class}"/>
+				</manifest>
+			</jar>
+		</target>
 	  </javac>
 	</target>
 
@@ -75,7 +91,7 @@
 	<!--
 	TODO: Make this target depend on the 'test' target.
 	-->
-	<target name="jar">
+	<target name="jar" depends="test">
           <ivy:cachefileset setid="hello.runclasspath" conf="compile" />
           <jar destfile="${jar.file}" basedir="${classes.dir}">
             <manifest>
